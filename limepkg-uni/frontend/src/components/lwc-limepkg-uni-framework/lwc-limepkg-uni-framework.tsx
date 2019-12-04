@@ -24,6 +24,9 @@ export class Framework implements LimeWebComponent {
     @Element()
     public element: HTMLElement;
 
+    @Element()
+    private host: HTMLElement; 
+
     @State()
     private dateValue = new Date();
 
@@ -65,6 +68,11 @@ export class Framework implements LimeWebComponent {
 
     private currentPostId = null;
 
+    private message: 'There is nothing to show. The database for this limetype is empty.';
+
+    private banner: HTMLLimelBannerElement;
+
+
     constructor() {
         this.handleDateChange = this.handleDateChange.bind(this);
         this.limetypeOnChange = this.limetypeOnChange.bind(this);
@@ -72,11 +80,19 @@ export class Framework implements LimeWebComponent {
         this.closeDialog = this.closeDialog.bind(this);
         this.statusOnChange = this.statusOnChange.bind(this);
         this.updateCurrentCardStatus = this.updateCurrentCardStatus.bind(this);
+
+        this.openBanner = this.openBanner.bind(this);
+        this.closeBanner = this.closeBanner.bind(this);
     }
 
     public componentWillLoad() {
         this.http = this.platform.get(PlatformServiceName.Http);
         this.getLimeTypes();
+    }
+
+    public componentDidLoad() {
+        console.log(this.host);
+        this.banner = this.host.shadowRoot.querySelector('limel-banner');
     }
 
     private getLimeTypes() {
@@ -149,6 +165,15 @@ export class Framework implements LimeWebComponent {
             }
             this.statusOptions.push(item);
         })
+    }
+
+    private openBanner() {
+        this.banner.open();
+        this.disabled = true;
+    }
+
+    private closeBanner() {
+        this.banner.close();
     }
 
     @Listen('cardClicked')
@@ -238,7 +263,16 @@ export class Framework implements LimeWebComponent {
 
 
     public render() {
-        let cardData = <h1>There are no data posts in the database.</h1>;
+        {this.openBanner}
+        let cardData = <limel-banner id='top-banner' message={this.message} icon="exclamation_mark">
+            <limel-flex-container
+                justify="end"
+                align="stretch"
+                slot="buttons"
+            >
+            <limel-button label="Close" onClick={this.closeBanner} />
+            </limel-flex-container>
+        </limel-banner>;
         if (this.fetchingDataComplete) {
             let limeTypeMetaData = null;
             Object.keys(this.limetypeMetaData).forEach((key) => {

@@ -46,6 +46,9 @@ export class Framework implements LimeWebComponent {
     private dialogIsOpen = false;
 
     @State()
+    private disabled = true;
+
+    @State()
     public selectedStatus: Option;
 
     private dialogData: { title: string, priorityValue: number, postId: number, priority: string };
@@ -184,8 +187,7 @@ export class Framework implements LimeWebComponent {
         this.dialog = <limel-dialog open={this.dialogIsOpen} onClose={this.closeDialog}>
             <div>
                 {title}
-                <limel-list items={dialogOutput}>
-                </limel-list>
+                <limel-list items={dialogOutput}> </limel-list>
                 <limel-select
                     // Vi vill ändra label så att den är status kortet/dialogen har just nu
                     label={"Limetype status"}
@@ -194,7 +196,9 @@ export class Framework implements LimeWebComponent {
                     onChange={this.statusOnChange}
                 />
             </div>
+
             <limel-flex-container justify="end" slot="button">
+                <limel-button disabled={this.disabled} label="Save" onClick={this.saveStatusChange.bind(this)}/>
                 <limel-button label="Close" onClick={this.closeDialog} />
             </limel-flex-container>
         </limel-dialog>
@@ -219,9 +223,17 @@ export class Framework implements LimeWebComponent {
     }
 
     private statusOnChange(event) {
-        // I denna vill vi skicka vårt PUT-request
-        this.selectedStatus = Object.create(event.detail); // FEL? Funkar?
+        this.disabled = false;
+        this.selectedStatus = Object.create(event.detail); // Funkar?
+        console.log(this.selectedStatus);
+        console.log(event.detail);
+
+    }
+
+    // I denna skickas vårt PUT-request, från Save-knappen
+    private saveStatusChange(){
         this.sendPutRequest();
+        this.disabled = true;
     }
 
 
